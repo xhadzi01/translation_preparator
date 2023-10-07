@@ -9,6 +9,7 @@ import (
 
 	"cloud.google.com/go/translate"
 	"golang.org/x/text/language"
+	"google.golang.org/api/option"
 )
 
 type translator struct {
@@ -17,10 +18,10 @@ type translator struct {
 }
 
 // NewTranslator function creates Translator abstraction
-func NewTranslator() (tr Translator, err error) {
+func NewTranslator(jsonAuthFilePath string) (tr Translator, err error) {
 	// create translation api client
 	ctx := context.Background()
-	client, err := translate.NewClient(ctx)
+	client, err := translate.NewClient(ctx, option.WithCredentialsFile(jsonAuthFilePath))
 	if err != nil {
 		return
 	}
@@ -91,12 +92,12 @@ func (tr *translator) SupportedTranslationLanguages(lang string) (languages []st
 		return
 	}
 
-	casted, err := language.Parse(lang)
+	casted, err := ToLanguageTag(lang)
 	if err != nil {
 		return
 	}
 
-	retrievedLangs, err := tr.client.SupportedLanguages(tr.context, casted)
+	retrievedLangs, err := tr.client.SupportedLanguages(tr.context, language.Tag(casted))
 	if err != nil {
 		return
 	}
